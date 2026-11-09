@@ -1,0 +1,7 @@
+# Never publish personal data
+*.json
+!manifest.webmanifest
+.claude/
+*.mp3
+*.m4a
+*.mp4

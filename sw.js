@@ -1,5 +1,5 @@
 // Offline support: app files are cached; pages try the network first so updates arrive.
-const CACHE = "jurnal-rm-v1";
+const CACHE = "jurnal-rm-v2";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
@@ -21,4 +21,12 @@ self.addEventListener("fetch", e => {
     if (res.ok || res.type === "opaque") { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
     return res;
   })));
+});
+// Tapping a reminder opens the app on the Jadual tab.
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({type: "window", includeUncontrolled: true}).then(list => {
+    for (const c of list) { if ("focus" in c) { c.navigate && c.url.indexOf("#jadual") < 0 && c.navigate("./#jadual").catch(() => {}); return c.focus(); } }
+    return self.clients.openWindow("./#jadual");
+  }));
 });

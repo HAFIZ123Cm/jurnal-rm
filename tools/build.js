@@ -80,8 +80,8 @@ const pwaHead = `<!doctype html>
 <meta name="apple-mobile-web-app-title" content="Jurnal RM">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/cat-192.png">
+<link rel="apple-touch-icon" href="icons/cat-180.png">
 `;
 const extraStyle = `<style>
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -122,5 +122,13 @@ const html = pwaHead + headPart + styleBlock + "\n" + extraStyle + "</head>\n<bo
 </body>
 </html>
 `;
-fs.writeFileSync(path.join(root, "index.html"), html);
-console.log("index.html written,", html.length, "bytes");
+const out = html.split("icons/icon-192.png").join("icons/cat-192.png");
+fs.writeFileSync(path.join(root, "index.html"), out);
+// Second copy at ./app/ — a fresh install address, so phones pick up the cat icon instead of a cached old one.
+const app = path.join(root, "app");
+fs.mkdirSync(path.join(app, "icons"), {recursive: true});
+fs.writeFileSync(path.join(app, "index.html"), out);
+fs.copyFileSync(path.join(root, "manifest.webmanifest"), path.join(app, "manifest.webmanifest"));
+fs.writeFileSync(path.join(app, "sw.js"), fs.readFileSync(path.join(root, "sw.js"), "utf8").replace("const PREFIX = \"jurnal-rm-v\";", "const PREFIX = \"jurnal-rm-app-v\";"));
+for (const f of ["cat-180.png", "cat-192.png", "cat-512.png"]) fs.copyFileSync(path.join(root, "icons", f), path.join(app, "icons", f));
+console.log("index.html + app/ written,", out.length, "bytes");
